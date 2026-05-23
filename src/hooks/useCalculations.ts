@@ -1,4 +1,4 @@
-import type { MortgageInput, MortgageResult, CreditCardInput, CreditCardResult, CompoundInput, CompoundResult, AmortRow, CompoundRow } from '../types/calculators';
+import type { MortgageInput, MortgageResult, CreditCardInput, CreditCardResult, CompoundInput, CompoundResult, AutoLoanInput, AutoLoanResult, AmortRow, CompoundRow } from '../types/calculators';
 
 // ============================================================
 // MORTGAGE CALCULATOR
@@ -167,5 +167,55 @@ export function calculateCompound(input: CompoundInput): CompoundResult {
     totalContributions: Math.round(totalContributions * 100) / 100,
     totalInterest: Math.round(totalInterest * 100) / 100,
     schedule,
+  };
+}
+
+// ============================================================
+// AUTO LOAN CALCULATOR
+// ============================================================
+export function calculateAutoLoan(input: AutoLoanInput): AutoLoanResult {
+  const { vehiclePrice, downPayment, tradeInValue, interestRate, loanTerm, salesTaxRate, titleFees } = input;
+  const salesTax = vehiclePrice * (salesTaxRate / 100);
+  const loanAmount = vehiclePrice + salesTax + titleFees - downPayment - tradeInValue;
+  const monthlyRate = interestRate / 100 / 12;
+  const totalMonths = loanTerm;
+
+  let monthlyPayment: number;
+  if (monthlyRate === 0) {
+    monthlyPayment = loanAmount / totalMonths;
+  } else {
+    const factor = Math.pow(1 + monthlyRate, totalMonths);
+    monthlyPayment = loanAmount * (monthlyRate * factor) / (factor - 1);
+  }
+
+  const amortization: AmortRow[] = [];
+  let balance = loanAmount;
+  let totalInterest = 0;
+
+  for (let month = 1; month <= totalMonths; month++) {
+    const interest = balance * monthlyRate;
+    const principal = monthlyPayment - interest;
+    totalInterest += interest;
+    balance -= principal;
+    if (balance < 0) balance = 0;
+
+    amortization.push({
+      month,
+      payment: monthlyPayment,
+      principal: Math.round(principal * 100) / 100,
+      interest: Math.round(interest * 100) / 100,
+      totalInterest: Math.round(totalInterest * 100) / 100,
+      balance: Math.round(balance * 100) / 100,
+    });
+
+    if (balance <= 0.01) break;
+  }
+
+  return {
+    loanAmount: Math.round(loanAmount * 100) / 100,
+    monthlyPayment: Math.round(monthlyPayment * 100) / 100,
+    totalPayment: Math.round(monthlyPayment * totalMonths * 100) / 100,
+    totalInterest: Math.round(totalInterest * 100) / 100,
+    amortization,
   };
 }

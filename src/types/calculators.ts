@@ -61,3 +61,21 @@ export interface CompoundResult {
   totalInterest: number;
   schedule: CompoundRow[];
 }
+
+export interface AutoLoanInput {
+  vehiclePrice: number;
+  downPayment: number;
+  tradeInValue: number;
+  interestRate: number;   // annual %
+  loanTerm: number;       // months
+  salesTaxRate: number;   // %
+  titleFees: number;
+}
+
+export interface AutoLoanResult {
+  loanAmount: number;
+  monthlyPayment: number;
+  totalPayment: number;
+  totalInterest: number;
+  amortization: AmortRow[];
+}

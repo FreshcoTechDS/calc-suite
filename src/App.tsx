@@ -6,7 +6,7 @@ import CompoundCalc from './pages/CompoundCalc';
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/calc-suite">
       <Nav />
       <main className="main">
         <Routes>
